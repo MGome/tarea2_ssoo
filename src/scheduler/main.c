@@ -1,7 +1,15 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "../file_manager/manager.h"
 
+// Se declaran las variables globales que almacenan
+// la cantidad de procesos por fabrica
+int procesos_fabrica1;
+int procesos_fabrica2;
+int procesos_fabrica3;
+int procesos_fabrica4;
+
+// Flujo principal
 int main(int argc, char **argv)
 {
   printf("Hello T2!\n");
