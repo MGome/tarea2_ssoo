@@ -2,13 +2,22 @@
 #include <stdlib.h>
 #include "process.h"
 
-Process* process_init(int pid, char* name, int fabric, int bursts)
+Process* process_init()
 {
-    Process* proceso = malloc(sizeof(Process))
-    proceso -> pid = pid;
-    proceso -> name = calloc(255, sizeof(char));
-    proceso -> fabric = fabric;
-    procso -> burst = burst;
+    Process* proceso = malloc(sizeof(Process));
+    // proceso -> pid = pid;
+    // proceso -> name [255] = name;
+    // proceso -> fabric = fabric;
+    // proceso -> qty_burst = qty_burst;
+    // proceso -> status = READY;
+    // proceso -> bursts [qty_burst];
 
+    // proceso -> next = malloc(sizeof(Process));
+    // // int array [bursts]
     return proceso;
 }
+
+// void eliminate_procces(Process* process)
+// {
+
+// }

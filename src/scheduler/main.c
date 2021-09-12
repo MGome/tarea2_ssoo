@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../file_manager/manager.h"
+#include "../process/process.h"
+#include "../queue/queue.h"
 
 // Se declaran las variables globales que almacenan
 // la cantidad de procesos por fabrica
@@ -14,6 +17,10 @@ int main(int argc, char **argv)
 {
   printf("Hello T2!\n");
 
+  //printf(argv[0]);
+  //printf(argv[1]);
+  //printf(argv[3]);
+
   InputFile *file = read_file("input.txt");
 
   printf("Reading file of length %i:\n", file->len);
@@ -23,5 +30,8 @@ int main(int argc, char **argv)
     printf(
         "\tProcess %s from factory %s has init time of %s and %s bursts.\n",
         line[0], line[2], line[1], line[3]);
-  }
+  };
+
+  Process* proceso = process_init();
+
 }
