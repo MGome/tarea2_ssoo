@@ -20,6 +20,7 @@ struct process
     int qty_burst;
     Process* next;
     int* bursts;
+    int* waits;
     int time_init;
 
     // Quizas es necesario incluir los parametros de output

@@ -41,20 +41,71 @@ int main(int argc, char **argv)
     Process* Proceso = process_init(process_id, line[0], atoi(line[2]), atoi(line[3]) , atoi(line[1]));
     //printf("%i\n", Proceso->time_init);
     process_id++;
+
+    switch (Proceso -> fabric)
+    {
+      case 1:
+        procesos_fabrica1++;
+        break;
+      case 2:
+        procesos_fabrica2++;
+        break;
+      case 3:
+        procesos_fabrica3++;
+        break;
+      case 4:
+        procesos_fabrica4++;
+        break;
+    }
+
+    // Se crean los arrelos para separar los CPU Bursts y IO Burst
+    int cantidad_burst = atoi(line[3]);
+    int* bursts = calloc(cantidad_burst, sizeof(int));
+    int* io_burst = calloc(cantidad_burst-1, sizeof(int));
+    int iteraciones_arreglos = 2*cantidad_burst-1;
+
+    int indice_burst = 0;
+    int indice_io = 0;
+
+    // Desde line[4] comienzan los argumentos de los bursts y wait
+    for (int i=0; i < iteraciones_arreglos; i++)
+    {
+      int indice_recorrido = 4+i;
+      if (i%2 == 0)
+      {
+        // Es un cpu burst
+        // int entero = atoi(line[indice_recorrido]);
+        bursts[indice_burst] = atoi(line[indice_recorrido]);
+        indice_burst++;
+      } else
+      {
+        // Es un io burst
+        io_burst[indice_io] = atoi(line[indice_recorrido]);
+        indice_io++;
+      }
+    }
+    Proceso -> bursts = bursts;
+    Proceso -> waits = io_burst;
+
+    // for(int i=0; i < cantidad_burst; i++){
+    //   printf("%i\n", Proceso->bursts[i]);
+    // }
+    // printf("--------------\n");
+
     list_sort(Cola, Proceso);
-    // TO DO: SUMA INDICE FABRICA
   };
-  //printf("%i", Cola -> head -> time_init);
+  
   list_print(Cola);
 
-  // int bursts [3] = {2, 3, 2};
-  // proceso -> bursts = bursts;
-
-  // for (int i=0; i<3; i++) 
-  // {
-  //   printf("%i", proceso->bursts[i]);
-  // };
-
-  // printf("%s", proceso->name);
+  for (int i =0; i < Cola->head->qty_burst; i++)
+  {
+    printf("BURSTS = %i \n", Cola->head->bursts[i]);
+  }
+  for (int i =0; i < Cola->head->qty_burst-1; i++)
+  {
+    printf("WAIT = %i \n", Cola->head->waits[i]);
+  }
+  // printf("Fabrica 1: %i\n", procesos_fabrica1);
+  // printf("Fabrica 3: %i\n", procesos_fabrica3);
 
 }
