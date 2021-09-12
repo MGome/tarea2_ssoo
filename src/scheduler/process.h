@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #pragma once
 
 typedef enum estado
@@ -15,13 +13,14 @@ struct process;
 typedef struct process Process;
 struct process
 {
-    // int pid;
-    // char* name;
-    // int fabric;
-    // //Estado status;
-    // int qty_burst;
-    // Process* next;
-    // int* bursts;
+    int pid;
+    char* name;
+    int fabric;
+    Estado status;
+    int qty_burst;
+    Process* next;
+    int* bursts;
+    int time_init;
 
     // Quizas es necesario incluir los parametros de output
     // dentro del struct. Tambien considerar los Ai Bi, que
@@ -29,4 +28,4 @@ struct process
 };
 
 // Metodos
-Process* process_init();
+Process* process_init(int pid, char* name, int fabric, int qty_burst, int time_init);
