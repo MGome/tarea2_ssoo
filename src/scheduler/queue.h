@@ -9,6 +9,7 @@ struct queue
     Process* head;
     Process* tail;
     int len;
+    int* procesosXfabrica; // procesos por fabrica
 };
 
 // // Metodos

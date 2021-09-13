@@ -13,6 +13,7 @@ int procesos_fabrica3;
 int procesos_fabrica4;
 int process_id = 0;
 int Q = 100;
+int time = 0;
 
 
 // Flujo principal
@@ -29,18 +30,14 @@ int main(int argc, char **argv)
 
   printf("%i\n", file -> len);
 
-  Queue* Cola = queue_init();
+  Queue* Procesos = queue_init();
 
   printf("Reading file of length %i:\n", file->len);
   for (int i = 0; i < file->len; i++)
   {
     char **line = file->lines[i];
-    // printf(
-    //     "\tProcess %s from factory %s has init time of %s and %s bursts.\n",
-    //     line[0], line[2], line[1], line[3]);
-    Process* Proceso = process_init(process_id, line[0], atoi(line[2]), atoi(line[3]) , atoi(line[1]));
-    //printf("%i\n", Proceso->time_init);
-    process_id++;
+
+    Process* Proceso = process_init(i, line[0], atoi(line[2]), atoi(line[3]) , atoi(line[1]));
 
     switch (Proceso -> fabric)
     {
@@ -60,8 +57,6 @@ int main(int argc, char **argv)
 
     // Se crean los arrelos para separar los CPU Bursts y IO Burst
     int cantidad_burst = atoi(line[3]);
-    int* bursts = calloc(cantidad_burst, sizeof(int));
-    int* io_burst = calloc(cantidad_burst-1, sizeof(int));
     int iteraciones_arreglos = 2*cantidad_burst-1;
 
     int indice_burst = 0;
@@ -75,37 +70,50 @@ int main(int argc, char **argv)
       {
         // Es un cpu burst
         // int entero = atoi(line[indice_recorrido]);
-        bursts[indice_burst] = atoi(line[indice_recorrido]);
+        Proceso -> bursts[indice_burst] = atoi(line[indice_recorrido]);
         indice_burst++;
       } else
       {
         // Es un io burst
-        io_burst[indice_io] = atoi(line[indice_recorrido]);
+        Proceso -> waits[indice_io] = atoi(line[indice_recorrido]);
         indice_io++;
       }
     }
-    Proceso -> bursts = bursts;
-    Proceso -> waits = io_burst;
 
-    // for(int i=0; i < cantidad_burst; i++){
-    //   printf("%i\n", Proceso->bursts[i]);
-    // }
-    // printf("--------------\n");
-
-    list_sort(Cola, Proceso);
+    //list_sort(Cola, Proceso);
+    list_append(Procesos, Proceso);
   };
-  
-  list_print(Cola);
 
-  for (int i =0; i < Cola->head->qty_burst; i++)
+  Queue* Cola = queue_init();
+
+  while (Procesos -> len > 0)
   {
-    printf("BURSTS = %i \n", Cola->head->bursts[i]);
+    //Procesos nuevos
+    int qty_new_process = 0;
+    Queue* new_processes = queue_init();
+    Process* current = Procesos -> head;
+    while (current)
+    {
+      Process* new_process = NULL;
+      if (current -> time_init == time)
+      {
+        list_append(new_processes, current);
+        list_finish_pop(Procesos);
+      } else {
+        break;
+      }
+    }
+    
+
+
+    for (Process* current = Procesos -> head; current; current = current -> next)
+    {
+
+    }
+
+
+
+    time++;
   }
-  for (int i =0; i < Cola->head->qty_burst-1; i++)
-  {
-    printf("WAIT = %i \n", Cola->head->waits[i]);
-  }
-  // printf("Fabrica 1: %i\n", procesos_fabrica1);
-  // printf("Fabrica 3: %i\n", procesos_fabrica3);
 
 }
