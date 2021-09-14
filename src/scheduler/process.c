@@ -22,6 +22,11 @@ Process* process_init(int pid, char* name, int fabric, int qty_burst, int time_i
     return proceso;
 }
 
+void print_process(Process* process)
+{
+    printf("Pid: %i, fabrix: %i, time_init: %i\n", process->pid, process-> fabric, process-> time_init);
+}
+
 // void eliminate_procces(Process* process)
 // {
 

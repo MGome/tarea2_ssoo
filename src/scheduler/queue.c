@@ -40,15 +40,15 @@ Process* list_pop_comeback(Queue* list)
     return head;
 } 
 
-int list_finish_pop(Queue* list)
+Process* list_finish_pop(Queue* list)
 {
   Process* head = list -> head;
   int pid = head -> pid;
   list -> head = list -> head -> next;
   list -> len -= 1;
-  free(head);
 
-  return pid;
+  head -> next = NULL;
+  return head;
 }
 
 void list_print(Queue* list)

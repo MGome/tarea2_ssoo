@@ -14,9 +14,9 @@ struct queue
 
 // // Metodos
 Queue* queue_init();
-void list_append(Queue* list, Process* node);
+void list_append(Queue* list, Process* process);
 void list_print(Queue* list);
-int list_finish_pop(Queue* list);
+Process* list_finish_pop(Queue* list);
 void list_destroy(Queue* list);
 void list_sort(Queue* list, Process* process);
 Process* list_pop_comeback(Queue* list);

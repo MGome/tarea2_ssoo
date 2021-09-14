@@ -30,3 +30,4 @@ struct process
 
 // Metodos
 Process* process_init(int pid, char* name, int fabric, int qty_burst, int time_init);
+void print_process(Process* process);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "./../file_manager/manager.h"
 #include "process.h"
@@ -15,6 +16,25 @@ int process_id = 0;
 int Q = 100;
 int time = 0;
 
+Queue* incoming_process(Queue* Procesos, int time)
+{
+  // Procesos que ingresan a la cola en el tiempo :time:
+  Queue* new_processes = queue_init();
+  Process* current = Procesos -> head;
+  while (Procesos -> len > 0)
+  {
+    if (current -> time_init == time)
+    {
+      Process* new_process = list_finish_pop(Procesos);
+      list_append(new_processes, new_process);
+      current = Procesos -> head;
+    } else {
+      break;
+    }
+  }
+
+  return new_processes;
+}
 
 // Flujo principal
 int main(int argc, char **argv)
@@ -79,39 +99,16 @@ int main(int argc, char **argv)
         indice_io++;
       }
     }
-
-    //list_sort(Cola, Proceso);
     list_append(Procesos, Proceso);
   };
 
   Queue* Cola = queue_init();
-
-  while (Procesos -> len > 0)
+  while (Procesos -> len > 0) //&& Cola -> len > 0)
   {
-    //Procesos nuevos
-    int qty_new_process = 0;
-    Queue* new_processes = queue_init();
-    Process* current = Procesos -> head;
-    while (current)
-    {
-      Process* new_process = NULL;
-      if (current -> time_init == time)
-      {
-        list_append(new_processes, current);
-        list_finish_pop(Procesos);
-      } else {
-        break;
-      }
-    }
-    
-
-
-    for (Process* current = Procesos -> head; current; current = current -> next)
-    {
-
-    }
-
-
+    printf("TIME: %i \n", time);
+    Queue* incoming = incoming_process(Procesos, time);
+    list_print(incoming);
+    printf("-------------------------- \n");
 
     time++;
   }
