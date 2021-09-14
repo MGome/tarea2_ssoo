@@ -33,22 +33,31 @@ void list_append(Queue* list, Process* process)
 Process* list_pop_comeback(Queue* list)
 {
     Process* head = list -> head;
-    //list -> head = head -> next;
-    //list -> tail -> next = head;
+    list -> head = head -> next;
+    list -> tail -> next = head;
     list -> tail = head;
-
+    head -> next = NULL;
     return head;
 } 
 
-Process* list_finish_pop(Queue* list)
+Process* list_process_exchange(Queue* list)
 {
   Process* head = list -> head;
   int pid = head -> pid;
   list -> head = list -> head -> next;
   list -> len -= 1;
-
   head -> next = NULL;
   return head;
+}
+
+void list_pop_finish(Queue* list)
+{
+  Process* head = list -> head;
+  int pid = head -> pid;
+  list -> head = list -> head -> next;
+  list -> len -= 1;
+  list -> procesosXfabrica[head -> fabric - 1] -= 1;
+  free(head);
 }
 
 void list_print(Queue* list)

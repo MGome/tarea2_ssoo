@@ -25,7 +25,7 @@ Queue* incoming_process(Queue* Procesos, int time)
   {
     if (current -> time_init == time)
     {
-      Process* new_process = list_finish_pop(Procesos);
+      Process* new_process = list_process_exchange(Procesos);
       list_append(new_processes, new_process);
       current = Procesos -> head;
     } else {
