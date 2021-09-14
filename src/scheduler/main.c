@@ -36,6 +36,22 @@ Queue* incoming_process(Queue* Procesos, int time)
   return new_processes;
 }
 
+int calculate_quantum(Queue* Cola)
+{
+  int f_i = Cola -> head -> fabric - 1; // id de la fabrica
+  int n_i = Cola -> procesosXfabrica[f_i];  // n_i
+
+  int f = 0;
+  for (int i = 0; i < 4; i++){
+    if (Cola -> procesosXfabrica[i] > 0)
+    {
+      f++;
+    }
+  }
+
+  return Q/ (n_i * f);
+} 
+
 // Flujo principal
 int main(int argc, char **argv)
 {
@@ -103,13 +119,44 @@ int main(int argc, char **argv)
   };
 
   Queue* Cola = queue_init();
+  int quantum = 0;
+  Process* executing_process = NULL;
   while (Procesos -> len > 0) //&& Cola -> len > 0)
   {
     printf("TIME: %i \n", time);
     Queue* incoming = incoming_process(Procesos, time);
     list_print(incoming);
-    printf("-------------------------- \n");
 
+    if (Cola -> len == 0)
+    {
+      // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
+      // TODO: desempate entre procesos.
+      if (incoming -> len > 0)
+      {
+        while (incoming -> len > 0)
+        {
+        Process* new_process = list_process_exchange(incoming);
+        printf("[t = %i] El proceso %s ha sido creado.", time, new_process-> name);
+        list_append(Cola, new_process);
+        }
+      } else {
+        printf("[t = %i] No hay ningún proceso ejecutando en la CPU.", time);
+      }
+
+      
+    }
+
+    // Proceso se ejecuta
+
+    if (!executing_process) // No hay proceso en ejecución
+    {
+      int quantum = calculate_quantum(Cola);  // se calcula su quantum
+      Process* executing_process = list_process_exchange(incoming); // se extrae el proceso en la cabeza
+    }
+    
+    
+
+    quantum--;
     time++;
   }
 

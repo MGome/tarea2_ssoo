@@ -46,6 +46,7 @@ Process* list_process_exchange(Queue* list)
   int pid = head -> pid;
   list -> head = list -> head -> next;
   list -> len -= 1;
+  list -> procesosXfabrica[head -> fabric - 1] -= 1;
   head -> next = NULL;
   return head;
 }
