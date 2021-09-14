@@ -22,6 +22,8 @@ struct process
     int* bursts;
     int* waits;
     int time_init;
+    int waits_id;
+    int bursts_id;
 
     // Quizas es necesario incluir los parametros de output
     // dentro del struct. Tambien considerar los Ai Bi, que

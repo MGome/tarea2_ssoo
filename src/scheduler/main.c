@@ -165,6 +165,23 @@ int main(int argc, char **argv)
     //   executing_process -> 
     // }
 
+    for(Process* current = Cola -> head; current; current = current -> next)
+    {
+      if (current -> status == WAITING)
+      {
+        int id = current -> waits_id;
+        current -> waits[id] -= 1;
+
+        if (current -> waits[id] == 0)
+        {
+          current -> status = READY;
+          current -> waits_id += 1;
+
+          printf("[t = %i] El proceso %s ha pasado a estado READY", time, current -> name);
+        }
+
+      }
+    }
 
     quantum--;
     time++;
