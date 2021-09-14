@@ -150,20 +150,45 @@ int main(int argc, char **argv)
 
     if (!executing_process) // No hay proceso en ejecución
     {
-      int quantum = calculate_quantum(Cola);  // se calcula su quantum
+      quantum = calculate_quantum(Cola);  // se calcula su quantum
       executing_process = list_process_exchange(incoming); // se extrae el proceso en la cabeza
     }
     
+    if (quantum == 0)
+    {
+      if (executing_process -> status == RUNNING)
+      {
+        executing_process -> status = READY;
+        printf("[t = %i] El proceso %s ha pasado a estado READY", time, executing_process -> name);
+        list_append(Cola, executing_process);
+        executing_process = NULL;
+      }
+    }
+
     if (executing_process -> status == WAITING)
     {
-      list_pop_comeback(Cola);
+      list_append(Cola, executing_process);
       executing_process = NULL;
-    }
+    } else {
+
+      if (executing_process -> status == READY)
+      {
+        executing_process -> status = RUNNING;
+        printf("[t = %i] El proceso %s ha pasado a estado RUNNING", time, executing_process -> name);
+      }
+
+      int id = executing_process -> bursts_id;
+      executing_process -> bursts[id] -= 1;
+
+    } 
+    
 
     // if (quantum > 0)
     // {
     //   executing_process -> 
     // }
+
+
 
     for(Process* current = Cola -> head; current; current = current -> next)
     {
