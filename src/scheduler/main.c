@@ -48,7 +48,7 @@ int calculate_quantum(Queue* Cola)
       f++;
     }
   }
-
+  // TODO: Función Piso
   return Q/ (n_i * f);
 } 
 
@@ -151,10 +151,20 @@ int main(int argc, char **argv)
     if (!executing_process) // No hay proceso en ejecución
     {
       int quantum = calculate_quantum(Cola);  // se calcula su quantum
-      Process* executing_process = list_process_exchange(incoming); // se extrae el proceso en la cabeza
+      executing_process = list_process_exchange(incoming); // se extrae el proceso en la cabeza
     }
     
-    
+    if (executing_process -> status == WAITING)
+    {
+      list_pop_comeback(Cola);
+      executing_process = NULL;
+    }
+
+    // if (quantum > 0)
+    // {
+    //   executing_process -> 
+    // }
+
 
     quantum--;
     time++;
