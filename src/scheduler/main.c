@@ -32,7 +32,7 @@ Queue* incoming_process(Queue* Procesos, int time)
       break;
     }
   }
-
+  // printf("REVISANDO %i\n", new_processes->head->next->pid);
   return new_processes;
 }
 
@@ -121,74 +121,106 @@ int main(int argc, char **argv)
   Queue* Cola = queue_init();
   int quantum = 0;
   Process* executing_process = NULL;
-  while (Procesos -> len > 0) //&& Cola -> len > 0)
+  while (time < 25) //&& Cola -> len > 0)
   {
-    printf("TIME: %i \n", time);
+    printf("Time: %i\n", time);
+    // printf("TIME: %i \n", time);
     Queue* incoming = incoming_process(Procesos, time);
+    
     list_print(incoming);
 
-    if (Cola -> len == 0)
-    {
-      // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
-      // TODO: desempate entre procesos.
-      if (incoming -> len > 0)
-      {
-        while (incoming -> len > 0)
-        {
-        Process* new_process = list_process_exchange(incoming);
-        printf("[t = %i] El proceso %s ha sido creado.", time, new_process-> name);
-        list_append(Cola, new_process);
-        }
-      } else {
-        printf("[t = %i] No hay ningún proceso ejecutando en la CPU.", time);
-      }
+    // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
+    // TODO: desempate entre procesos.
 
-      
+    if (incoming -> len > 0)
+    {
+      //  printf("Largo procesos que entran: %i\n", incoming->len);
+      while (incoming -> len > 0)
+      {
+        Process* new_process = list_process_exchange(incoming);
+        printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+        list_append(Cola, new_process);
+      }
+    } else if (Cola -> len == 0 && !executing_process) {
+      printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
+      time++;
+      continue;
     }
 
     // Proceso se ejecuta
 
     if (!executing_process) // No hay proceso en ejecución
-    {
-      quantum = calculate_quantum(Cola);  // se calcula su quantum
-      executing_process = list_process_exchange(incoming); // se extrae el proceso en la cabeza
+    { 
+      // quantum = calculate_quantum(Cola);  // se calcula su quantum
+      quantum = 4;
+      executing_process = list_process_exchange(Cola); // se extrae el proceso en la cabeza
+      // printf("Nodo siguiente: %i \n", Cola -> head -> pid);
     }
     
-    if (quantum == 0)
+    if (quantum == 0 && executing_process -> bursts[executing_process -> bursts_id] != 0)
     {
       if (executing_process -> status == RUNNING)
       {
         executing_process -> status = READY;
-        printf("[t = %i] El proceso %s ha pasado a estado READY", time, executing_process -> name);
+        printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
-      }
-    }
+        continue;
 
-    if (executing_process -> status == WAITING)
+      } 
+    } else if (quantum != 0)
     {
+      if (executing_process -> status == WAITING)
+        {
+          list_append(Cola, executing_process);
+          executing_process = NULL;
+
+        } else {
+
+          if (executing_process -> status == READY)
+          {
+            executing_process -> status = RUNNING;
+            printf("[t = %i] El proceso %s ha pasado a estado RUNNING\n", time, executing_process -> name);
+          }
+
+          if (executing_process -> bursts[executing_process -> bursts_id] == 0)
+          {
+            // Se le acabo burst
+            executing_process -> bursts_id += 1;
+            executing_process -> status = WAITING;
+            printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
+            list_append(Cola, executing_process);
+            executing_process = NULL;
+
+            for(Process* current = Cola -> head; current; current = current -> next)
+            {
+              if (current -> status == WAITING)
+              {
+                int id = current -> waits_id;
+                current -> waits[id] -= 1;
+
+                if (current -> waits[id] == -1)
+                {
+                  current -> status = READY;
+                  current -> waits_id += 1;
+
+                  printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, current -> name);
+                }
+              }
+            }
+            time++;
+            continue;
+          }
+        } 
+    } else if (quantum == 0 && executing_process -> bursts[executing_process -> bursts_id] == 0) 
+    {
+      executing_process -> bursts_id += 1;
+      executing_process -> status = WAITING;
+      printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
       list_append(Cola, executing_process);
       executing_process = NULL;
-    } else {
-
-      if (executing_process -> status == READY)
-      {
-        executing_process -> status = RUNNING;
-        printf("[t = %i] El proceso %s ha pasado a estado RUNNING", time, executing_process -> name);
-      }
-
-      int id = executing_process -> bursts_id;
-      executing_process -> bursts[id] -= 1;
-
-    } 
-    
-
-    // if (quantum > 0)
-    // {
-    //   executing_process -> 
-    // }
-
-
+      continue;
+    }
 
     for(Process* current = Cola -> head; current; current = current -> next)
     {
@@ -197,19 +229,25 @@ int main(int argc, char **argv)
         int id = current -> waits_id;
         current -> waits[id] -= 1;
 
-        if (current -> waits[id] == 0)
+        if (current -> waits[id] == -1)
         {
           current -> status = READY;
           current -> waits_id += 1;
 
-          printf("[t = %i] El proceso %s ha pasado a estado READY", time, current -> name);
+          printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, current -> name);
         }
-
       }
     }
 
-    quantum--;
+    if (executing_process)
+    {
+      int id = executing_process -> bursts_id;
+      executing_process -> bursts[id] -= 1;
+      quantum--;
+    }
     time++;
+    printf("Quantum: %i\n", quantum);
+    
   }
 
 }
