@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "queue.h"
 #include "process.h"
 
@@ -100,19 +101,19 @@ void list_sort(Queue* list, Process* process)
         {
 
             if (previous == NULL ){
-                if (process -> time_init <= current->time_init)
+                if (process -> fabric <= current->fabric)
                 {
                     process -> next = current;
                     list -> head = process;
                     break;
-                } else if (process -> time_init > current->time_init && list -> len == 1) {
+                } else if (process -> fabric > current->fabric && list -> len == 1) {
                     current -> next = process;
                     list -> tail = process;
                     break;
                 }
             }
 
-            if (process -> time_init <= current -> time_init)
+            if (process -> fabric <= current -> fabric)
             {
                 previous -> next = process;
                 process -> next = current;
@@ -120,7 +121,7 @@ void list_sort(Queue* list, Process* process)
 
             } else if (current -> next == NULL)
             {
-              if (process -> time_init < current -> time_init)
+              if (process -> fabric < current -> fabric)
               {
                   previous -> next = process;
                   process -> next = current;
@@ -141,3 +142,25 @@ void list_sort(Queue* list, Process* process)
     }
     list -> len += 1;
 }
+
+// void list_sort_name(Queue* list)
+// {
+//   Process* previous = NULL;
+//   for (Process* current = list -> head; current; current = current -> next)
+//   {
+//     if (previous)
+//     {
+//       int result = strcmp(previous -> name, current -> name);
+//       if (result <= 0)
+//       {
+//         continue;
+//       } else {
+//         previous -> next = current -> next;
+//         current -> next = previous
+//       }
+//     }
+
+//     previous = current;
+//   }
+
+// }

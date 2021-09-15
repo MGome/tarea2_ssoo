@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "./../file_manager/manager.h"
 #include "process.h"
@@ -26,7 +27,7 @@ Queue* incoming_process(Queue* Procesos, int time)
     if (current -> time_init == time)
     {
       Process* new_process = list_process_exchange(Procesos);
-      list_append(new_processes, new_process);
+      list_sort(new_processes, new_process);
       current = Procesos -> head;
     } else {
       break;
@@ -141,30 +142,54 @@ int main(int argc, char **argv)
   Queue* Cola = queue_init();
   int quantum = 0;
   Process* executing_process = NULL;
-  while (time < 25) //&& Cola -> len > 0)
+  int qty_process = Procesos -> len;
+  int process_finished = 0;
+  while (qty_process != process_finished)
   {
     // printf("Time: %i\n", time);
     // printf("TIME: %i \n", time);
     Queue* incoming = incoming_process(Procesos, time);
-    
-    list_print(incoming);
 
     // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
     // TODO: desempate entre procesos.
-
-    if (incoming -> len > 0)
+    if (Cola -> len == 0)
     {
-      //  printf("Largo procesos que entran: %i\n", incoming->len);
-      while (incoming -> len > 0)
-      {
-        Process* new_process = list_process_exchange(incoming);
-        printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
-        list_append(Cola, new_process);
+      if (incoming -> len > 0)
+      { 
+        while (incoming -> len > 0)
+        {
+          Process* new_process = list_process_exchange(incoming);
+          if (incoming -> len >= 1)
+          {
+            Process* new_process2 = list_process_exchange(incoming);
+            if (new_process -> fabric == new_process2 -> fabric)
+            {
+              int result = strcmp(new_process -> name, new_process2 -> name);
+              if (result <= 0)
+              {
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+                list_append(Cola, new_process);
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
+                list_append(Cola, new_process2);
+              } else if (result > 0)
+              {
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
+                list_append(Cola, new_process2);
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+                list_append(Cola, new_process);
+              }
+            }
+          } else 
+          {
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);
+          }      
+        }
+      } else if (Cola -> len == 0 && !executing_process) {
+        printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
+        time++;
+        continue;
       }
-    } else if (Cola -> len == 0 && !executing_process) {
-      printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
-      time++;
-      continue;
     }
 
     // Proceso se ejecuta
@@ -229,6 +254,7 @@ int main(int argc, char **argv)
           executing_process -> status = FINISHED;
           printf("[t = %i] El proceso %s ha pasado a estado FINISHED\n", time, executing_process -> name);
           executing_process = NULL;
+          process_finished++;
           continue;
         }
         executing_process -> bursts_id += 1;
@@ -246,6 +272,7 @@ int main(int argc, char **argv)
         executing_process -> status = FINISHED;
         printf("[t = %i] El proceso %s ha pasado a estado FINISHED\n", time, executing_process -> name);
         executing_process = NULL;
+        process_finished++;
         continue;
       }
       executing_process -> bursts_id += 1;
@@ -260,6 +287,44 @@ int main(int argc, char **argv)
     int id = executing_process -> bursts_id;
     executing_process -> bursts[id] -= 1;
     quantum--;
+
+    if (incoming -> len > 0)
+      { 
+        while (incoming -> len > 0)
+        {
+          Process* new_process = list_process_exchange(incoming);
+          if (incoming -> len >= 1)
+          {
+            Process* new_process2 = list_process_exchange(incoming);
+            if (new_process -> fabric == new_process2 -> fabric)
+            {
+              int result = strcmp(new_process -> name, new_process2 -> name);
+              if (result <= 0)
+              {
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+                list_append(Cola, new_process);
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
+                list_append(Cola, new_process2);
+              } else if (result > 0)
+              {
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
+                list_append(Cola, new_process2);
+                printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+                list_append(Cola, new_process);
+              }
+            }
+          } else 
+          {
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);
+          }      
+        }
+      } else if (Cola -> len == 0 && !executing_process) {
+        printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
+        time++;
+        continue;
+      }
+
     time++;
   }
 

@@ -19,5 +19,6 @@ void list_print(Queue* list);
 Process* list_process_exchange(Queue* list);
 void list_destroy(Queue* list);
 void list_sort(Queue* list, Process* process);
+void list_sort_name(Queue* list, Process* process);
 Process* list_pop_comeback(Queue* list);
 void list_pop_finish(Queue* list);
