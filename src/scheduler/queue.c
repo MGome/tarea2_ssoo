@@ -83,12 +83,17 @@ void list_destroy(Queue* list)
 
     while(curr)
     {
+      free(prev -> bursts);
+      free(prev -> waits);
       free(prev);
       prev = curr;
       curr = curr -> next;
     }
+    free(prev -> bursts);
+    free(prev -> waits);
     free(prev);
   }
+  free(list -> procesosXfabrica);
   free(list);
 }
 
