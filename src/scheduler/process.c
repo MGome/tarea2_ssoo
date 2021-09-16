@@ -17,6 +17,7 @@ Process* process_init(int pid, char* name, int fabric, int qty_burst, int time_i
     proceso -> next = NULL;
     proceso -> waits_id = 0;
     proceso -> bursts_id = 0;
+    proceso -> first_tag = -1;
     // // int array [bursts]
     return proceso;
 }

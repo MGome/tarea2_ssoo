@@ -27,6 +27,7 @@ Queue* incoming_process(Queue* Procesos, int time)
     if (current -> time_init == time)
     {
       Process* new_process = list_process_exchange(Procesos);
+      new_process ->llego_cola = time;
       list_sort(new_processes, new_process);
       current = Procesos -> head;
     } else {
@@ -49,9 +50,8 @@ int calculate_quantum(Queue* Cola)
       f++;
     }
   }
-  // TODO: Función Piso
   return Q/ (n_i * f);
-} 
+}
 
 void wait_sum(Queue* Cola)
 {
@@ -61,14 +61,19 @@ void wait_sum(Queue* Cola)
       {
         int id = current -> waits_id;
         current -> waits[id] -= 1;
+        current -> waiting_time++;
 
         if (current -> waits[id] == -1)
         {
           current -> status = READY;
           current -> waits_id += 1;
+          current -> waiting_time++;
 
-          printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, current -> name);
+          printf("[t = %i] El proceso %s ha pasado a estado READY por haber terminado su IO Burst\n", time, current -> name);
         }
+      } else if (current -> status == READY)
+      {
+        current -> waiting_time++;
       }
     }
 }
@@ -149,7 +154,6 @@ int main(int argc, char **argv)
     // printf("Time: %i\n", time);
     // printf("TIME: %i \n", time);
     Queue* incoming = incoming_process(Procesos, time);
-
     // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
     // TODO: desempate entre procesos.
 
@@ -158,31 +162,8 @@ int main(int argc, char **argv)
       while (incoming -> len > 0)
       {
         Process* new_process = list_process_exchange(incoming);
-        if (incoming -> len >= 1)
-        {
-          Process* new_process2 = list_process_exchange(incoming);
-          if (new_process -> fabric == new_process2 -> fabric)
-          {
-            int result = strcmp(new_process -> name, new_process2 -> name);
-            if (result <= 0)
-            {
-              printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
-              list_append(Cola, new_process);
-              printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
-              list_append(Cola, new_process2);
-            } else if (result > 0)
-            {
-              printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process2-> name);
-              list_append(Cola, new_process2);
-              printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
-              list_append(Cola, new_process);
-            }
-          }
-        } else 
-        {
-          printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
-          list_append(Cola, new_process);
-        }      
+        printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+        list_append(Cola, new_process);      
       }
     } else if (Cola -> len == 0 && !executing_process) {
       printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
@@ -197,6 +178,7 @@ int main(int argc, char **argv)
     if (!executing_process) // No hay proceso en ejecución
     { 
       quantum = calculate_quantum(Cola);  // se calcula su quantum
+      // printf("QUANTUM: %i\n", quantum);
       // quantum = 4;
       executing_process = list_process_exchange(Cola); // se extrae el proceso en la cabeza
       if (executing_process->status == WAITING)
@@ -209,14 +191,18 @@ int main(int argc, char **argv)
           {
             int id = current -> waits_id;
             current -> waits[id] -= 1;
+            current -> waiting_time++;
 
             if (current -> waits[id] == -1)
             {
               current -> status = READY;
               current -> waits_id += 1;
-              printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, current -> name);
+              printf("[t = %i] El proceso %s ha pasado a estado READY por haber terminado su IO Burst\n", time, current -> name);
               time--;
             }
+          } else if (current -> status == READY)
+          {
+            current -> waiting_time++;
           }
         }
 
@@ -231,6 +217,7 @@ int main(int argc, char **argv)
       if (executing_process -> status == RUNNING)
       {
         executing_process -> status = READY;
+        executing_process -> n_interrupt++;
         printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
@@ -243,6 +230,12 @@ int main(int argc, char **argv)
       if (executing_process -> status == READY)
       {
         executing_process -> status = RUNNING;
+        executing_process -> n_chosen++;
+        if (executing_process -> first_tag == -1)
+        {
+          executing_process -> response_time = time- executing_process->llego_cola;
+          executing_process -> first_tag = 0;
+        }
         printf("[t = %i] El proceso %s ha pasado a estado RUNNING\n", time, executing_process -> name);
       }
 
@@ -252,7 +245,15 @@ int main(int argc, char **argv)
         if (executing_process -> bursts_id == executing_process -> qty_burst - 1)
         {
           executing_process -> status = FINISHED;
+          // executing_process -> n_interrupt++;
+          int turnaround_time = time - executing_process -> time_init;
           printf("[t = %i] El proceso %s ha pasado a estado FINISHED\n", time, executing_process -> name);
+          printf("NOMBRE PROCESO TERMINADO: %s\n", executing_process->name);
+          printf("NUMERO DE VECES QUE FUE EJECUTADO: %i\n", executing_process -> n_chosen);
+          printf("NUMERO DE VECES QUE FUE INTERRUMPIDO: %i\n", executing_process -> n_interrupt);
+          printf("TURNAROUND TIME: %i\n", turnaround_time);
+          printf("RESPONSE TIME: %i\n", executing_process -> response_time);
+          printf("WAITING TIME: %i\n", executing_process -> waiting_time);
           free(executing_process->bursts);
           free(executing_process->waits);
           free(executing_process);
@@ -262,7 +263,8 @@ int main(int argc, char **argv)
         }
         executing_process -> bursts_id += 1;
         executing_process -> status = WAITING;
-        printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
+        executing_process -> waiting_time--;
+        printf("[t = %i] El proceso %s ha pasado a estado WAITING por haber acabado su CPU Burst\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
         continue;
@@ -273,17 +275,26 @@ int main(int argc, char **argv)
       if (executing_process -> bursts_id == executing_process -> qty_burst - 1)
       {
         executing_process -> status = FINISHED;
+        executing_process -> n_interrupt++;
+        int turnaround_time = time - executing_process -> time_init;
         printf("[t = %i] El proceso %s ha pasado a estado FINISHED\n", time, executing_process -> name);
-        free(executing_process->bursts);
-        free(executing_process->waits);
-        free(executing_process);
+        printf("NUMERO DE VECES QUE FUE EJECUTADO: %i\n", executing_process -> n_chosen);
+        printf("NUMERO DE VECES QUE FUE INTERRUMPIDO: %i\n", executing_process -> n_interrupt);
+        printf("TURNAROUND TIME: %i\n", turnaround_time);
+        printf("RESPONSE TIME: %i\n", executing_process -> response_time);
+        printf("WAITING TIME: %i\n", executing_process -> waiting_time);
+        // free(executing_process->bursts);
+        // free(executing_process->waits);
+        // free(executing_process);
         executing_process = NULL;
         process_finished++;
         continue;
       }
       executing_process -> bursts_id += 1;
       executing_process -> status = WAITING;
-      printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
+      executing_process -> n_interrupt++;
+      executing_process -> waiting_time--;
+      printf("[t = %i] El proceso %s ha pasado a estado WAITING por haber acabado su CPU Burst y Quantum\n", time, executing_process -> name);
       list_append(Cola, executing_process);
       executing_process = NULL;
       continue;

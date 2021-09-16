@@ -106,7 +106,7 @@ void list_sort(Queue* list, Process* process)
         {
 
             if (previous == NULL ){
-                if (process -> fabric <= current->fabric)
+                if (process -> fabric < current->fabric)
                 {
                     process -> next = current;
                     list -> head = process;
@@ -118,7 +118,7 @@ void list_sort(Queue* list, Process* process)
                 }
             }
 
-            if (process -> fabric <= current -> fabric)
+            if (process -> fabric < current -> fabric)
             {
                 previous -> next = process;
                 process -> next = current;
