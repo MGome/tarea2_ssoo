@@ -70,7 +70,7 @@ void list_print(Queue* list)
   }
   for(Process* current = list -> head; current; current = current -> next)
   {
-    printf("%i\n", current -> time_init);
+    printf("%s\n", current -> name);
   }
 }
 
@@ -115,6 +115,20 @@ void list_sort(Queue* list, Process* process)
                     current -> next = process;
                     list -> tail = process;
                     break;
+                } else if (process -> fabric == current->fabric && list -> len == 1)
+                {
+                  int result = strcmp(process -> name, current -> name);
+                  if (result >= 0)
+                  {
+                    current -> next = process;
+                    list -> tail = process;
+                    break;
+                  } else
+                  {
+                    process -> next = current;
+                    list -> head = process;
+                    break;
+                  }
                 }
             }
 
@@ -132,10 +146,24 @@ void list_sort(Queue* list, Process* process)
                   process -> next = current;
                   list -> tail = current;
                   break;
-              }  else {
+              }  else if (process -> fabric > current -> fabric) {
                   current -> next = process;
                   list -> tail = process;
                   break;
+              } else if (process -> fabric == current -> fabric) {
+                int result = strcmp(process -> name, current -> name);
+                if (result >= 0)
+                {
+                  current -> next = process;
+                  list -> tail = process;
+                  break;
+                } else
+                {
+                  previous -> next = process;
+                  process -> next = current;
+                  list -> tail = current;
+                  break;
+                }
               }
             }
 

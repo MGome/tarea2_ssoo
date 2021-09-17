@@ -9,10 +9,6 @@
 
 // Se declaran las variables globales que almacenan
 // la cantidad de procesos por fabrica
-int procesos_fabrica1;
-int procesos_fabrica2;
-int procesos_fabrica3;
-int procesos_fabrica4;
 int process_id = 0;
 int Q = 100;
 int time = 0;
@@ -101,22 +97,6 @@ int main(int argc, char **argv)
 
     Process* Proceso = process_init(i, line[0], atoi(line[2]), atoi(line[3]) , atoi(line[1]));
 
-    switch (Proceso -> fabric)
-    {
-      case 1:
-        procesos_fabrica1++;
-        break;
-      case 2:
-        procesos_fabrica2++;
-        break;
-      case 3:
-        procesos_fabrica3++;
-        break;
-      case 4:
-        procesos_fabrica4++;
-        break;
-    }
-
     // Se crean los arrelos para separar los CPU Bursts y IO Burst
     int cantidad_burst = atoi(line[3]);
     int iteraciones_arreglos = 2*cantidad_burst-1;
@@ -142,6 +122,7 @@ int main(int argc, char **argv)
       }
     }
     list_append(Procesos, Proceso);
+    
   };
 
   Queue* Cola = queue_init();
@@ -151,9 +132,9 @@ int main(int argc, char **argv)
   int process_finished = 0;
   while (qty_process != process_finished)
   {
-    // printf("Time: %i\n", time);
-    // printf("TIME: %i \n", time);
+
     Queue* incoming = incoming_process(Procesos, time);
+    
     // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
     // TODO: desempate entre procesos.
 
@@ -172,13 +153,16 @@ int main(int argc, char **argv)
     }
 
     list_destroy(incoming);
+    // printf("--------\n");
+    // list_print(Cola);
+    // printf("--------\n");
 
     // Proceso se ejecuta
 
     if (!executing_process) // No hay proceso en ejecución
     { 
       quantum = calculate_quantum(Cola);  // se calcula su quantum
-      // printf("QUANTUM: %i\n", quantum);
+
       // quantum = 4;
       executing_process = list_process_exchange(Cola); // se extrae el proceso en la cabeza
       if (executing_process->status == WAITING)
@@ -248,7 +232,6 @@ int main(int argc, char **argv)
           // executing_process -> n_interrupt++;
           int turnaround_time = time - executing_process -> time_init;
           printf("[t = %i] El proceso %s ha pasado a estado FINISHED\n", time, executing_process -> name);
-          printf("NOMBRE PROCESO TERMINADO: %s\n", executing_process->name);
           printf("NUMERO DE VECES QUE FUE EJECUTADO: %i\n", executing_process -> n_chosen);
           printf("NUMERO DE VECES QUE FUE INTERRUMPIDO: %i\n", executing_process -> n_interrupt);
           printf("TURNAROUND TIME: %i\n", turnaround_time);
@@ -264,7 +247,7 @@ int main(int argc, char **argv)
         executing_process -> bursts_id += 1;
         executing_process -> status = WAITING;
         executing_process -> waiting_time--;
-        printf("[t = %i] El proceso %s ha pasado a estado WAITING por haber acabado su CPU Burst\n", time, executing_process -> name);
+        printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
         continue;
@@ -294,7 +277,7 @@ int main(int argc, char **argv)
       executing_process -> status = WAITING;
       executing_process -> n_interrupt++;
       executing_process -> waiting_time--;
-      printf("[t = %i] El proceso %s ha pasado a estado WAITING por haber acabado su CPU Burst y Quantum\n", time, executing_process -> name);
+      printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
       list_append(Cola, executing_process);
       executing_process = NULL;
       continue;
