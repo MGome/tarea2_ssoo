@@ -130,6 +130,8 @@ int main(int argc, char **argv)
   Process* executing_process = NULL;
   int qty_process = Procesos -> len;
   int process_finished = 0;
+  bool primera_vuelta = true;
+  
   while (qty_process != process_finished)
   {
 
@@ -138,7 +140,7 @@ int main(int argc, char **argv)
     // Cuando no hay procesos en la Cola, todos los procesos entrantes ingresan al final de la cola.
     // TODO: desempate entre procesos.
 
-    if (incoming -> len > 0)
+    if (incoming -> len > 0 && primera_vuelta)
     { 
       while (incoming -> len > 0)
       {
@@ -146,13 +148,17 @@ int main(int argc, char **argv)
         printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
         list_append(Cola, new_process);      
       }
+      primera_vuelta = false;
+      list_destroy(incoming);
+
     } else if (Cola -> len == 0 && !executing_process) {
       printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
       time++;
+      list_destroy(incoming);
       continue;
     }
 
-    list_destroy(incoming);
+    // list_destroy(incoming);
     // printf("--------\n");
     // list_print(Cola);
     // printf("--------\n");
@@ -190,6 +196,22 @@ int main(int argc, char **argv)
           }
         }
 
+        
+        if (incoming -> len > 0)
+        { 
+          while (incoming -> len > 0)
+          {
+            Process* new_process = list_process_exchange(incoming);
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);      
+          }
+        list_destroy(incoming);
+
+        } else if (Cola -> len == 0 && !executing_process) {
+          printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
+          time++;
+          continue;
+        }
         time++;
         continue;
       }
@@ -205,6 +227,18 @@ int main(int argc, char **argv)
         printf("[t = %i] El proceso %s ha pasado a estado READY\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
+        if (incoming -> len > 0)
+        { 
+          while (incoming -> len > 0)
+          {
+            Process* new_process = list_process_exchange(incoming);
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);      
+          }
+        
+
+        }
+        list_destroy(incoming);
         continue;
 
       } 
@@ -242,6 +276,17 @@ int main(int argc, char **argv)
           free(executing_process);
           executing_process = NULL;
           process_finished++;
+          if (incoming -> len > 0)
+          { 
+            while (incoming -> len > 0)
+            {
+              Process* new_process = list_process_exchange(incoming);
+              printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+              list_append(Cola, new_process);      
+            }
+          
+          }
+          list_destroy(incoming);
           continue;
         }
         executing_process -> bursts_id += 1;
@@ -250,6 +295,17 @@ int main(int argc, char **argv)
         printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
         list_append(Cola, executing_process);
         executing_process = NULL;
+        if (incoming -> len > 0)
+        { 
+          while (incoming -> len > 0)
+          {
+            Process* new_process = list_process_exchange(incoming);
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);      
+          }
+        
+        }
+        list_destroy(incoming);
         continue;
       }
         
@@ -271,6 +327,17 @@ int main(int argc, char **argv)
         // free(executing_process);
         executing_process = NULL;
         process_finished++;
+        if (incoming -> len > 0)
+        { 
+          while (incoming -> len > 0)
+          {
+            Process* new_process = list_process_exchange(incoming);
+            printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+            list_append(Cola, new_process);      
+          }
+        
+        }
+        list_destroy(incoming);
         continue;
       }
       executing_process -> bursts_id += 1;
@@ -280,14 +347,38 @@ int main(int argc, char **argv)
       printf("[t = %i] El proceso %s ha pasado a estado WAITING\n", time, executing_process -> name);
       list_append(Cola, executing_process);
       executing_process = NULL;
+      if (incoming -> len > 0)
+      { 
+        while (incoming -> len > 0)
+        {
+          Process* new_process = list_process_exchange(incoming);
+          printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+          list_append(Cola, new_process);      
+        }
+      
+      }
+      list_destroy(incoming);
       continue;
     }
+
+    if (incoming -> len > 0)
+    { 
+      while (incoming -> len > 0)
+      {
+        Process* new_process = list_process_exchange(incoming);
+        printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
+        list_append(Cola, new_process);      
+      }
+    
+    }
+    list_destroy(incoming);
 
     wait_sum(Cola);
     int id = executing_process -> bursts_id;
     executing_process -> bursts[id] -= 1;
     quantum--;
     time++;
+
   }
   list_destroy(Procesos);
   list_destroy(Cola);
