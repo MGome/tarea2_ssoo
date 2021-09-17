@@ -149,12 +149,18 @@ int main(int argc, char **argv)
         list_append(Cola, new_process);      
       }
       primera_vuelta = false;
-      list_destroy(incoming);
+      // if (incoming)
+      // {
+      //   list_destroy(incoming);
+      // }
 
     } else if (Cola -> len == 0 && !executing_process) {
       printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
       time++;
-      list_destroy(incoming);
+      if (incoming)
+      {
+        list_destroy(incoming);
+      }
       continue;
     }
 
@@ -205,11 +211,18 @@ int main(int argc, char **argv)
             printf("[t = %i] El proceso %s ha sido creado.\n", time, new_process-> name);
             list_append(Cola, new_process);      
           }
-        list_destroy(incoming);
+        if (incoming)
+        {
+          list_destroy(incoming);
+        }
 
         } else if (Cola -> len == 0 && !executing_process) {
           printf("[t = %i] No hay ningún proceso ejecutando en la CPU.\n", time);
           time++;
+          if (incoming)
+          {
+            list_destroy(incoming);
+          }
           continue;
         }
         time++;
@@ -236,9 +249,12 @@ int main(int argc, char **argv)
             list_append(Cola, new_process);      
           }
         
-
         }
-        list_destroy(incoming);
+        if (incoming)
+        {
+          list_destroy(incoming);
+        }
+        
         continue;
 
       } 
@@ -286,7 +302,10 @@ int main(int argc, char **argv)
             }
           
           }
-          list_destroy(incoming);
+          if (incoming)
+          {
+            list_destroy(incoming);
+          }
           continue;
         }
         executing_process -> bursts_id += 1;
@@ -305,7 +324,10 @@ int main(int argc, char **argv)
           }
         
         }
-        list_destroy(incoming);
+        if (incoming)
+        {
+          list_destroy(incoming);
+        }
         continue;
       }
         
@@ -322,9 +344,9 @@ int main(int argc, char **argv)
         printf("TURNAROUND TIME: %i\n", turnaround_time);
         printf("RESPONSE TIME: %i\n", executing_process -> response_time);
         printf("WAITING TIME: %i\n", executing_process -> waiting_time);
-        // free(executing_process->bursts);
-        // free(executing_process->waits);
-        // free(executing_process);
+        free(executing_process->bursts);
+        free(executing_process->waits);
+        free(executing_process);
         executing_process = NULL;
         process_finished++;
         if (incoming -> len > 0)
@@ -337,7 +359,10 @@ int main(int argc, char **argv)
           }
         
         }
-        list_destroy(incoming);
+        if (incoming)
+        {
+          list_destroy(incoming);
+        }
         continue;
       }
       executing_process -> bursts_id += 1;
@@ -357,7 +382,10 @@ int main(int argc, char **argv)
         }
       
       }
-      list_destroy(incoming);
+      if (incoming)
+      {
+        list_destroy(incoming);
+      }
       continue;
     }
 
@@ -371,7 +399,12 @@ int main(int argc, char **argv)
       }
     
     }
-    list_destroy(incoming);
+    if (incoming)
+    {
+      list_destroy(incoming);
+    }
+    
+    
 
     wait_sum(Cola);
     int id = executing_process -> bursts_id;
